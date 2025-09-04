@@ -22,7 +22,7 @@ export const createTeam = async (req, res) => {
         },
       ],
     });
-    
+
     user.teams.push(team._id)
     // console.log(user)
     await user.save()
@@ -73,46 +73,36 @@ export const getTeamById = async (req, res) => {
     console.error("getTeamById error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
-}; 
+};
 
 // Add Member to Team (only admin)
 export const addMember = async (req, res) => {
+  const { teamId } = req.params;
+  const { email} = req.body;
+  
   try {
-    // router.post("/:teamId/add", addMember);
-    const { teamId } = req.params;
-    const { email, role } = req.body;
-    const { uid } = req.user;
+  
+    const team = await Team.findById(teamId);
+    if (!team) return res.status(404).json({ error: "Team not found" });
 
-    // console.log(teamId, email, uid)
-    
-    const userRequesting = await User.findOne({ uid }); //user which asked to add any other user in his team
-    const team = await Team.findById(teamId); //team exist
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!userRequesting || !team) return res.status(404).json({ error: "Team or user not found" });
-
-    const isAdmin = team.members.find(
-      (m) => m.user.toString() === userRequesting._id.toString() && m.role === "admin"
+    // Check if user already in team
+    const alreadyInTeam = team.members.some(
+      (m) => m.user.toString() === user._id.toString() 
     );
+    if (alreadyInTeam) return res.status(400).json({ error: "User already in team" });
 
-    if (!isAdmin) return res.status(403).json({ error: "Only admins can add members" });
-
-    const userToAdd = await User.findOne({ email }); //finding that userdetails who invited in team
-    if (!userToAdd) return res.status(404).json({ error: "User to add not found" });
-
-    const alreadyMember = team.members.find(
-      (m) => m.user.toString() === userToAdd._id.toString()
-    );
-
-    if (alreadyMember) return res.status(400).json({ error: "User already a member" });
-
-    team.members.push({ user: userToAdd._id, role: role });
+    // Add user
+    team.members.push({ user: user._id });
     await team.save();
-
-    res.status(200).json({ message: "Member added", team });
+    res.json({ message: "Member added successfully", team });
   } catch (err) {
-    console.error("addMember error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
+
 };
 
 // Remove Member from Team (only admin)
@@ -120,7 +110,7 @@ export const removeMember = async (req, res) => {
   try {
     const { teamId, userId } = req.params;
     const { uid } = req.user;
-
+    
     const userRequesting = await User.findOne({ uid });
     const team = await Team.findById(teamId);
 
@@ -129,7 +119,6 @@ export const removeMember = async (req, res) => {
     const isAdmin = team.members.find(
       (m) => m.user.toString() === userRequesting._id.toString() && m.role === "admin"
     );
-
     if (!isAdmin) return res.status(403).json({ error: "Only admins can remove members" });
 
     team.members = team.members.filter((m) => m.user.toString() !== userId);
@@ -142,8 +131,6 @@ export const removeMember = async (req, res) => {
   }
 };
 
-
-// Promote a member to manager
 export const promoteToManager = async (req, res) => {
   try {
     const { teamId, userId } = req.params;
@@ -189,4 +176,50 @@ export const promoteToManager = async (req, res) => {
   }
 };
 
+export const getNonMembersOfTeam = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { uid } = req.user;
+
+    const currentUser = await User.findOne({ uid });
+    if (!currentUser) return res.status(404).json({ error: "User not found" });
+
+    const team = await Team.findById(teamId);
+    if (!team) return res.status(404).json({ error: "Team not found" });
+
+    const memberIds = team.members.map(member => member.user.toString()); //get members of team
+
+    const nonMembers = await User.find({ _id: { $nin: memberIds } }) //store users those who's id not include in that team
+      .select("name email teams");
+
+    res.status(200).json({ nonMembers });
+  } catch (err) {
+    console.error("getNonMembersOfTeam error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getNonAdminMembers = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { uid } = req.user;
+
+    const requestingUser = await User.findOne({ uid });
+    if (!requestingUser) return res.status(404).json({ error: "User not found" });
+
+    const team = await Team.findById(teamId).populate("members.user", "name email uid");
+    if (!team) return res.status(404).json({ error: "Team not found" });
+
+    // Filter out members with role "admin"
+    const nonAdminMembers = team.members.filter(
+      (member) => member.role !== "admin"
+    );
+
+    res.status(200).json({ nonAdminMembers });
+
+  } catch (err) {
+    console.error("getNonAdminMembers error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 

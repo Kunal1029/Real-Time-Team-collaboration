@@ -20,11 +20,11 @@ const teamSchema = new mongoose.Schema(
       {
         user: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ref: "User", 
         },
         role: {
           type: String,
-          enum: ["admin", "Manager", "member"],
+          enum: ["admin", "manager", "member"],
           default: "member",
         },
         joinedAt: {

@@ -4,11 +4,13 @@ import admin from "../helper/firebase.js";
 
 export const createOrGetUser = async (req, res) => {
   try {
-    const { uid, name, email } = req.user;
+    const {email, uid} = req.user;
     // console.log(email, name,uid)
     if (!uid || !email) {
       return res.status(400).json({ error: "UID and Email are required" });
     }
+
+    const { name } = req.body; 
 
     let user = await User.findOne({ uid });
 

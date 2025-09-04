@@ -4,14 +4,14 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 type Role = "admin" | "manager" | "member";
 
 interface TempState {
-  currRole: Role | null;
+  currRole: Role | null ;
   currteam: string | null;
   pageSwitch: string | null;
   teamID: string | null;
 }
 
 const initialState: TempState = {
-  currRole: "member",
+  currRole: null,
   currteam: null,
   pageSwitch: null,
   teamID: null

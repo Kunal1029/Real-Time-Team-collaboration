@@ -5,6 +5,7 @@ interface TeamModalProps {
   onClose: () => void;
   onCreate: (data: { name: string; description: string }) => void;
 }
+import toastService from "../helper/toastService";
 
 export const TeamModel: React.FC<TeamModalProps> = ({
   isOpen,
@@ -22,10 +23,12 @@ export const TeamModel: React.FC<TeamModalProps> = ({
     setName("");
     setDescription("");
     onClose();
+    toastService.success(`Team ${name} created successfully`);
   };
+  
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div className="fixed inset-0 z-100 backdrop-blur-md bg-black/30 flex items-center justify-center  bg-opacity-0">
       <div className="relative p-4 w-full max-w-md">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           {/* Header */}

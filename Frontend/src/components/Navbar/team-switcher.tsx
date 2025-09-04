@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { setUserRole, setTeam , setPage } from "../Redux/Features/tempSlice";
+import { setUserRole,  setPage } from "../Redux/Features/tempSlice";
+import toastService from "../helper/toastService";
 
 interface Team {
   name: string;
@@ -45,12 +46,16 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
     }
   }, [activeTeam]);
   
+  
 
   const changeRole = (team: Team) => {
     setActiveTeam(team);
     dispatch(setPage("NoTeam"))
-    dispatch(setUserRole(team.name))
-    dispatch(setTeam("Marketing"))
+    dispatch(setUserRole(team?.name))
+    
+    setTimeout(()=>{
+      toastService.success(`Switched to ${team.name} role`);
+    },2000)
   };
 
   if (!teams.length || !activeTeam) {

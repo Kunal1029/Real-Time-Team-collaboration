@@ -1,4 +1,4 @@
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ import {
   signUpUser,
   signUpGoogle,
 } from "../Redux/Features/authSlice";
+import toastService from "../helper/toastService";
+import { Loader2Icon } from "lucide-react";
 
 const FormField = ({
   id,
@@ -44,27 +46,52 @@ const FormField = ({
 
 export function Login({ className, ...props }: React.ComponentProps<"div">) {
   const [isLogin, setIsLogin] = useState(true);
+  const [LoginType, setLoginType] = useState<string | null>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otherF, setOtherF] = useState("");
+  const [name, setname] = useState("");
 
   const dispatch = useAppDispatch();
   const { loading, error, user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (user) {
-      navigate("/user/nav"); 
+      navigate("/user/nav");
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      dispatch(loginUser({ email, password }));
-    } else {
-      dispatch(signUpUser({ email, password }));
+
+    if (!email || !password) {
+      toastService.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      if (isLogin) {
+        const result = await dispatch(loginUser({ email, password }));
+        if (loginUser.fulfilled.match(result)) {
+          setLoginType(null);
+          toastService.success("Login successful");
+        } else {
+          setLoginType(null);
+          toastService.error("Login failed");
+        }
+      } else {
+        const result = await dispatch(signUpUser({name, email, password}));
+        if (signUpUser.fulfilled.match(result)) {
+          setLoginType(null);
+          toastService.success("Account created successfully");
+        } else {
+          setLoginType(null);
+          toastService.error("Signup failed");
+        }
+      }
+    } catch (err) {
+      toastService.error("Something went wrong");
     }
   };
 
@@ -90,10 +117,10 @@ export function Login({ className, ...props }: React.ComponentProps<"div">) {
               {!isLogin && (
                 <FormField
                   id="name"
-                  value={otherF}
+                  value={name}
                   label="Name"
                   placeholder="Ravi Kumar"
-                  onChange={(e) => setOtherF(e.target.value)}
+                  onChange={(e) => setname(e.target.value)}
                 />
               )}
               <FormField
@@ -122,20 +149,32 @@ export function Login({ className, ...props }: React.ComponentProps<"div">) {
                   type="submit"
                   disabled={loading}
                   className="w-30 mx-auto"
-                  // onClick={loginUser}
+                  onClick={() => setLoginType("login")}
                 >
-                  {loading ? "Processing..." : ""}
-                  Login
+                  {loading && LoginType === "login" ? (
+                    <>
+                      <Loader2Icon className="animate-spin mr-2" />
+                      Please wait
+                    </>
+                  ) : (
+                    "Login"
+                  )}
                 </Button>
               ) : (
                 <Button
                   type="submit"
                   disabled={loading}
                   className="w-30 mx-auto"
-                  // onClick={signUpUser}
+                  onClick={() => setLoginType("signup")}
                 >
-                  {loading ? "Processing..." : ""}
-                  SignUp
+                  {loading && LoginType === "signup" ? (
+                    <>
+                      <Loader2Icon className="animate-spin mr-2" />
+                      Please wait
+                    </>
+                  ) : (
+                    "Sign Up"
+                  )}
                 </Button>
               )}
 
@@ -149,16 +188,23 @@ export function Login({ className, ...props }: React.ComponentProps<"div">) {
                 <Button
                   variant="outline"
                   type="button"
-                  className="w-full "
-                  onClick={() => dispatch(signUpGoogle())}
-                  disabled={loading}
+                  className="w-full"
+                  onClick={() => {
+                    setLoginType("google");
+                    dispatch(signUpGoogle(name));
+                  }}
+                  disabled={loading && LoginType === "google"}
                 >
-
-                  {/* Placeholder icons - Replace with real ones if needed */}
-                  <span className="text-sm">
-                    {" "}
-                    {loading ? "Signing in..." : "Sign in with Google"}
-                  </span>
+                  {loading && LoginType === "google" ? (
+                    <>
+                      <Loader2Icon className="animate-spin mr-2" />
+                      Signing in...
+                    </>
+                  ) : isLogin ? (
+                    "Sign in with Google"
+                  ) : (
+                    "Sign up with Google"
+                  )}
                 </Button>
               </div>
 

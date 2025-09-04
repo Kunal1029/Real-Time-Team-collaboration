@@ -23,6 +23,8 @@ interface TeamState {
   currentTeam: Team | null;
   loading: boolean;
   error: string | null;
+  nonMembers: any[];
+  nonAdminMembers: any[];
 }
 
 const initialState: TeamState = {
@@ -30,6 +32,8 @@ const initialState: TeamState = {
   currentTeam: null,
   loading: false,
   error: null,
+  nonMembers: [],
+  nonAdminMembers: [],
 };
 
 // Utility: Get Firebase Auth Header
@@ -115,26 +119,42 @@ export const promoteMember = createAsyncThunk(
   }
 );
 
-// Add a member to the team
+
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+
 export const addMember = createAsyncThunk(
   "team/addMember",
   async (
     {
-      teamId,
       email,
+      teamId,
     }: {
-      teamId: string;
       email: string;
+      teamId: string;
     },
     thunkAPI
   ) => {
     try {
-      console.log(email, teamId);
       const config = await getAuthHeader();
-      console.log(config)
-      const res = await axios.put(
-        `/api/team/${teamId}/add`,
-        {email},
+      const res = await axios.put(`${BASE_URL}/api/team/${teamId}/add`, { email }, config);
+      return res.data.team;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.response?.data?.error || err.message);
+    }
+  }
+);
+
+// Remove a member from the team
+ 
+
+export const removeMember = createAsyncThunk(
+  "team/removeMember",
+  async ({ teamId, userId }: { teamId: string; userId: string }, thunkAPI) => { //current teamid & userid (which needs to remove)
+    try {
+      console.log(teamId, userId)
+      const config = await getAuthHeader();
+      const res = await axios.delete(
+        `/api/team/${teamId}/remove/${userId}`,
         config
       );
       return res.data.team;
@@ -144,17 +164,31 @@ export const addMember = createAsyncThunk(
   }
 );
 
-// Remove a member from the team
-export const removeMember = createAsyncThunk(
-  "team/removeMember",
-  async ({ teamId, userId }: { teamId: string; userId: string }, thunkAPI) => {
+
+
+export const fetchNonMembers = createAsyncThunk(
+  "team/fetchNonMembers",
+  async (teamId: string, thunkAPI) => {
     try {
       const config = await getAuthHeader();
-      const res = await axios.delete(
-        `/api/team/${teamId}/remove/${userId}`,
+      const res = await axios.get(`/api/team/${teamId}/non-members`, config);
+      return res.data.nonMembers;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.response?.data?.error || err.message);
+    }
+  }
+);
+
+export const fetchNonAdminMembers = createAsyncThunk(
+  "team/fetchNonAdminMembers",
+  async (teamId: string, thunkAPI) => {
+    try {
+      const config = await getAuthHeader();
+      const res = await axios.get(
+        `/api/team/${teamId}/non-admin-members`,
         config
       );
-      return res.data.team;
+      return res.data.nonAdminMembers;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.error || err.message);
     }
@@ -172,6 +206,35 @@ const teamSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+    
+      .addCase(fetchNonMembers.fulfilled, (state, action) => {
+        state.nonMembers = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchNonMembers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchNonMembers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+
+      .addCase(fetchNonAdminMembers.fulfilled, (state, action) => {
+        state.nonAdminMembers = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchNonAdminMembers.pending, (state) => {
+        state.loading = true; 
+        state.error = null;
+      })
+      .addCase(fetchNonAdminMembers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+
       .addCase(getCurrentTeam.pending, (state) => {
         state.loading = true;
         state.error = null;

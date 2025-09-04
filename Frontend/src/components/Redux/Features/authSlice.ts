@@ -29,8 +29,8 @@ const initialState: AuthState = {
 // 🔹 Google Signup/Login
 export const signUpGoogle = createAsyncThunk(
   "auth/signUpGoogle",
-  async (_, thunkAPI) => {
-    try {
+  async (name: string, thunkAPI) => {
+    try { 
       const googleProvider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, googleProvider); // 1st: Firebase login
       const idToken = await userCredential.user.getIdToken(); // 2nd: get Firebase token
@@ -38,7 +38,7 @@ export const signUpGoogle = createAsyncThunk(
       // 3rd: call your backend to create/get user from MongoDB
       const res = await axios.post(
         "/api/user",
-        {},
+        {name},
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -91,20 +91,19 @@ export const loginUser = createAsyncThunk(
 export const signUpUser = createAsyncThunk(
   "auth/signUpUser",
   async (
-    { email, password }: { email: string; password: string },
+    {name, email, password }: { name: string; email: string; password: string;  },
     thunkAPI
   ) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
-
       const idToken = await userCredential.user.getIdToken();
       const res = await axios.post(
         "/api/user",
-        {},
+        {name},
         {
           headers: {
             Authorization: `Bearer ${idToken}`,

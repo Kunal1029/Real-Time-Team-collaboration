@@ -7,7 +7,9 @@ import {
   getTeamById,
   addMember,
   removeMember,
-  promoteToManager
+  promoteToManager,
+  getNonAdminMembers,
+  getNonMembersOfTeam 
 } from "../controller/teamController.js";
 
 router.use(verifyFirebaseToken);
@@ -17,5 +19,9 @@ router.get("/:id", getTeamById);
 router.put("/:teamId/add", addMember);
 router.delete("/:teamId/remove/:userId", removeMember);
 router.put("/:teamId/promote/:userId", promoteToManager);
+
+router.get("/:teamId/non-admin-members", getNonAdminMembers);
+router.get("/:teamId/non-members", getNonMembersOfTeam);
+
 
 export default router;
