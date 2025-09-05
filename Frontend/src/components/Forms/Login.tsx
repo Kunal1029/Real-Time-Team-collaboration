@@ -1,6 +1,8 @@
 import { GalleryVerticalEnd } from "lucide-react"
 
-import { LoginForm } from "@/components/FirstVisit/Login"
+// import  Login  from "@/components/FirstVisit/Login"
+import {Login as FormLogin}  from "../FirstVisit/Login.tsx"
+// import { Login } from "../FirstVisit/Login.tsx"
 
 export default function Login() {
   return (
@@ -12,7 +14,7 @@ export default function Login() {
           </div>
           Acme Inc.
         </a>
-        <LoginForm />
+        <FormLogin />
       </div>
     </div>
   )

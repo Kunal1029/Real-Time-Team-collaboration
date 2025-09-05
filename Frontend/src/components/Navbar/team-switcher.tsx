@@ -20,6 +20,8 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { setUserRole,  setPage } from "../Redux/Features/tempSlice";
 import toastService from "../helper/toastService";
 
+
+
 interface Team {
   name: string;
   logo: React.ElementType;
@@ -46,12 +48,10 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
     }
   }, [activeTeam]);
   
-  
-
   const changeRole = (team: Team) => {
     setActiveTeam(team);
     dispatch(setPage("NoTeam"))
-    dispatch(setUserRole(team?.name))
+    dispatch(setUserRole(team.name as "manager" | "member" | "admin"))
     
     setTimeout(()=>{
       toastService.success(`Switched to ${team.name} role`);

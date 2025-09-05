@@ -11,7 +11,6 @@ import RoleBasedAuth from "./components/Layouts/RoleBasedAuth";
 import AdminLayout from "./components/Layouts/AdminLayout";
 import Admin from "./components/AfterLogin/Admin/Admin";
 import Navbar from "./components/Navbar/Navbar";
-import KanbanBoard from "./kanban/kanbanBoard";
 import { Toaster } from 'sonner'
 
 function App() {
@@ -26,7 +25,6 @@ function App() {
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/company" element={<CompanyPage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/kanban" element={<KanbanBoard />} />
             <Route path="/unauthorized" element={<UnAuthorized />} />
           </Route>
 

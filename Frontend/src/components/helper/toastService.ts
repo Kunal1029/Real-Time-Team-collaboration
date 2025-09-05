@@ -8,7 +8,7 @@ const toastService = {
     });
   },
 
-  error: (message: string, payload: unknown) => {
+  error: (message: string) => {
     toast.error(message, {
       duration: 4000,
       position: "top-right",

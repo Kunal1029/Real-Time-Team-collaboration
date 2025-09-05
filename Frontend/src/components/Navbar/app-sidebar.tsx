@@ -37,7 +37,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const data = getSidebarData(usz);
   // console.log(data, "----> data")
-  const { name, email, avatar } = data.user;
+  const { avatar } = data.user;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -49,9 +49,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser name={name} email={email} avatar={avatar} />
+        <NavUser avatar={avatar} />
       </SidebarFooter>
-      <SidebarRail />
+      <SidebarRail /> 
     </Sidebar>
   );
 }

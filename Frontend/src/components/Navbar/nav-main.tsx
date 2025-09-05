@@ -32,11 +32,23 @@ import { getUserProfile } from "../Redux/Features/authSlice";
 export function NavMain() {
   const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
-  const { teams } = useAppSelector((state) => state.team); // All teams
-  const { user } = useAppSelector((state) => state.auth); // User with teams
+  interface Member {
+    user: { _id: string } | string;
+    role: string;
+  }
+
+  interface Team {
+    _id: string;
+    name: string;
+    members: Member[];
+    // add other properties as needed
+  }
+
+  const { teams } = useAppSelector((state) => state.team) as { teams: Team[] }; // All teams
+  const user = useAppSelector((state) => state.auth.user) as { name?: string; _id?: string } | null; // User with teams
   const currRole = useAppSelector((state) => state.temp.currRole);
 
-  const [roleBT, setRoleBT] = useState<typeof teams>([]);
+  const [roleBT, setRoleBT] = useState<Team[]>([]);
 
   useEffect(() => {
     dispatch(getUserProfile());
@@ -68,7 +80,7 @@ export function NavMain() {
     }
   };
 
-  const storeTeamID = (id, name) => {
+  const storeTeamID = (id: string, name: string) => {
     dispatch(setPage("Team"))
     dispatch(setTeam(name))
     dispatch(setTeamID(id));
@@ -78,7 +90,11 @@ export function NavMain() {
   return (
     <>
       <SidebarGroup>
-        <SidebarGroupLabel>{user?.name}'s Space</SidebarGroupLabel>
+        <SidebarGroupLabel>
+          {typeof user === "object" && user !== null && "name" in user
+            ? `${user.name}'s Space`
+            : "My Space"}
+        </SidebarGroupLabel>
 
         <Tooltip>
           <TooltipTrigger asChild>

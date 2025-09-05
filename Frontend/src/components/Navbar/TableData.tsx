@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAppSelector, useAppDispatch } from "@/hooks/reduxHooks";
 import {
   getCurrentTeam,
@@ -218,7 +219,7 @@ const TableData: React.FC = () => {
                             {m?.role === "member" && currRole === "admin" && (
                               <button
                                 onClick={() =>
-                                  PromoteToManager(teamID, m?.user?._id)
+                                  teamID && typeof teamID === "string" && PromoteToManager(teamID, m?.user?._id)
                                 }
                                 className="inline-flex  items-center px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800"
                               >
@@ -229,7 +230,7 @@ const TableData: React.FC = () => {
                             {currRole === "admin" && (
                               <button
                                 onClick={() =>
-                                  RemoveMemberFromTeam(teamID, m?.user?._id)
+                                  teamID && typeof teamID === "string" && RemoveMemberFromTeam(teamID, m?.user?._id)
                                 }
                                 className="inline-flex ms-5 items-center px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
                               >

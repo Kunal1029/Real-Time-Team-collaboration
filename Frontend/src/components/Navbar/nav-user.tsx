@@ -22,28 +22,45 @@ import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
 import { logoutUser } from "../Redux/Features/authSlice";
 import { useNavigate } from "react-router-dom";
 import toastService from "../helper/toastService";
+import { useEffect, useState } from "react";
 
 interface usr {
   avatar?: string;
+}
+
+interface currUr {
+  name: string;
+  email: string;
 }
 
 export function NavUser({ avatar }: usr) {
   const { isMobile } = useSidebar();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const user = useAppSelector((state) => 
-    state.auth.user
-  );
+  const user = useAppSelector((state) => state.auth.user);
+
+  const [myUser, setUser] = useState<currUr>({ name: "", email: "" });
+
+  useEffect(() => {
+    if (user && typeof user === "object" && "name" in user && "email" in user) {
+      const { name, email } = user as { name: string; email: string };
+      setUser({ name, email });
+    } else {
+      setUser({ name: "", email: "" });
+    }
+  }, [user]);
 
   const logO = async () => {
     const res = await dispatch(logoutUser());
     if (logoutUser.fulfilled.match(res)) {
       toastService.success("Logged out successfully");
     } else {
-      toastService.error("Logout failed:", res.payload);
+      toastService.error("Logout failed:");
     }
     navigate("/login", { replace: true });
   };
+
+  console.log(user);
 
   return (
     <SidebarMenu>
@@ -55,12 +72,12 @@ export function NavUser({ avatar }: usr) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={avatar} alt={user?.name} />
+                <AvatarImage src={avatar} alt={myUser?.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.name}</span>
-                <span className="truncate text-xs">{user?.email}</span>
+                <span className="truncate font-medium">{myUser?.name}</span>
+                <span className="truncate text-xs">{myUser?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -74,12 +91,12 @@ export function NavUser({ avatar }: usr) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={avatar} alt={user?.name} />
+                  <AvatarImage src={avatar} alt={myUser?.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user?.name}</span>
-                  <span className="truncate text-xs">{user?.email}</span>
+                  <span className="truncate font-medium">{myUser?.name}</span>
+                  <span className="truncate text-xs">{myUser?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
