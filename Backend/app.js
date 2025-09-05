@@ -15,7 +15,7 @@ import cors from "cors"
 
 app.use(express.json());
 app.use(cors({
-  origin: "https://teamcapp.netlify.app", // React app
+  origin: "https://teamcapp2.netlify.app", // React app
   credentials: true,
 }));
 
